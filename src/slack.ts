@@ -69,10 +69,23 @@ async function handleInteractivity(payload: SlackModalPayload) {
 
       await slackApi("chat.postMessage", {
         channel: "C060B8P9CJC",
-        text: `Oh dang, y'all! :eyes: <@${payload.user.id}> just started a a food fight with a ${fields.spiceLevel} take: ${fields.opinion}... discuss `,
+        text: `Oh dang, y’all! :eyes: <@${payload.user.id}> just started a food fight with a ${fields.spiceLevel} take:\n\n*${fields.opinion}*\n\n...discuss.`,
+      });
+      break;
+
+    case "start-food-fight-nudge":
+      const channel = payload.channel?.id;
+      const user_id = payload.user.id;
+      const thread_ts = payload.message.thread_ts ?? payload.message.ts;
+
+      await slackApi("chat.postMessage", {
+        channel,
+        thread_ts,
+        text: `Hey <@${user_id}>, an opinion like this one deserves a heated public debate. Run the \`/foodfight\` slash command in a main channel to start one!`,
       });
 
       break;
+
     default:
       console.log(`No handler defined for ${callback_id}`);
       return {
@@ -83,7 +96,7 @@ async function handleInteractivity(payload: SlackModalPayload) {
   return {
     statusCode: 200,
     body: "",
-  }
+  };
 }
 
 export const handler: Handler = async (event) => {
@@ -102,8 +115,8 @@ export const handler: Handler = async (event) => {
   }
 
   if (body.payload) {
-    const payload = JSON.parse(body.payload)
-    return handleInteractivity(payload)
+    const payload = JSON.parse(body.payload);
+    return handleInteractivity(payload);
   }
 
   return {
