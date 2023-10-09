@@ -1,5 +1,5 @@
 export async function notionApi(endpoint: string, body: {}) {
-  const res = await fetch(`https://api.notion.com/v1/${endpoint}`, {
+  const res = await fetch(`https://api.notion.com/v1${endpoint}`, {
     method: "POST",
     headers: {
       accept: "application/json",
@@ -19,9 +19,9 @@ export async function notionApi(endpoint: string, body: {}) {
   return data;
 }
 
-export async function getNewItem(): Promise<NewItem[]> {
+export async function getNewItems(): Promise<NewItem[]> {
   const notionData = await notionApi(
-    `/database/${process.env.NOTION_DATABASE_ID}/query`,
+    `/databases/${process.env.NOTION_DATABASE_ID}/query`,
     {
       filter: {
         property: "Status",
@@ -32,6 +32,7 @@ export async function getNewItem(): Promise<NewItem[]> {
       page_size: 100,
     }
   );
+
   const openItems = notionData.results.map((item: NotionItem) => {
     return {
       opinion: item.properties.opinion.title[0].text.content,
@@ -39,5 +40,31 @@ export async function getNewItem(): Promise<NewItem[]> {
       status: item.properties.Status.status.name,
     };
   });
+
   return openItems;
+}
+
+export async function saveItem(item: NewItem) {
+  const res = await notionApi("/pages", {
+    parent: {
+      database_id: process.env.NOTION_DATABASE_ID,
+    },
+    properties: {
+      opinion: {
+        title: [{ text: { content: item.opinion } }],
+      },
+      spiceLevel: {
+        select: {
+          name: item.spiceLevel,
+        },
+      },
+      submitter: {
+        rich_text: [{ text: { content: `@${item.submitter} on Slack` } }],
+      },
+    },
+  });
+
+  if (!res.ok) {
+    console.log(res);
+  }
 }
