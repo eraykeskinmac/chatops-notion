@@ -1,4 +1,4 @@
-import { Handler, schedule } from "@netlify/functions";
+import { Handler } from "@netlify/functions";
 import { getNewItems } from "./util/notion";
 import { blocks, slackApi } from "./util/slack";
 
@@ -26,4 +26,4 @@ const postNotionItemsSlack: Handler = async () => {
   };
 };
 
-export const handler = schedule("* * * * *", postNotionItemsSlack);
+// export const handler = schedule("* * * * *", postNotionItemsSlack);
